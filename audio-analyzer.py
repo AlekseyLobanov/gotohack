@@ -1,28 +1,46 @@
 import json
 import sys
-import pymongo
+from collections import OrderedDict
+
+import requests
+
+vkToken = sys.argv[3]
 
 pazanIds = None
 
 pazansFileName = sys.argv[1]
 with open(pazansFileName) as file:
-	pazanIds = json.loads(file.read()).keys()
+	pazanIds = [int(line) for line in file]
 
 artistStats = dict()
 
-audioCollection = pymongo.MongoClient("goto.reproducible.work")["vk"]["audio"]
-for pazanId in pazanIds:
-	for audio in audioCollection.find({"owner_id": pazanId}, {"artist": 1, "title": 1, "url": 1}):
-		audioName = audio["artist"] + audio["title"]
-		artistStatsItem = artistStats.get(audioName, {
-			"url": audio["url"],
-			"count": 0
-		})
-		artistStatsItem["count"] += 1
-		artistStats[audioName] = artistStatsItem
+def save():
+	with open(sys.argv[2], "w", encoding="utf-8") as file:
+		data = OrderedDict(sorted(artistStats.items(), key=lambda item: item[1]["count"], reverse=True))
+		file.write(json.dumps(data, sort_keys=False))
+	print("saving")
 
-with open(sys.argv[2], "w", encoding="utf-8") as file:
-	for item in sorted(artistStats.items(), key=lambda item: item[1]["count"], reverse=True):
-		file.write(item[0] + "\n")
-		file.write("\tcount: " + str(item[1]["count"]) + "\n")
-		file.write("\turl: " + str(item[1]["url"]) + "\n")
+try:
+	for index, pazanId in enumerate(pazanIds):
+		print(index)
+		jsonData = requests.get("https://api.vk.com/method/{}?{}&access_token={}".format("audio.get", "owner_id={}&need_user={}&count={}".format(pazanId, 0, 100), vkToken)).json()
+		if "error" not in jsonData:
+			for audio in jsonData["response"][1:]:
+				audioName = audio["artist"] + audio["title"]
+				artistStatsItem = artistStats.get(audioName, {
+					"url": audio["url"],
+					"count": 0
+				})
+				artistStatsItem["count"] += 1
+				artistStats[audioName] = artistStatsItem
+		elif jsonData["error"]["error_code"] != 19:
+			print(jsonData["error"])
+			print("Press any key")
+			input()
+
+		if index % 10 == 0:
+			save()
+except Exception as e:
+	print(e)
+
+save()
