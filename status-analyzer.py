@@ -6,7 +6,7 @@ from nltk.tokenize import RegexpTokenizer
 # load pazans
 pazansGroups = None
 
-pazansFileName = sys.argv[2]
+pazansFileName = sys.argv[1]
 with open(pazansFileName) as file:
 	pazansGroups = json.loads(file.read())
 
@@ -16,7 +16,7 @@ statusStats = dict()
 tokenizer = RegexpTokenizer(r"[A-Za-zА-Яа-я]+")
 stemmer = RussianStemmer()
 
-usersFileName = sys.argv[1]
+usersFileName = sys.argv[2]
 with open(usersFileName) as file:
 	for line in file:
 		user = json.loads(line)
