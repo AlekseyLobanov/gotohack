@@ -1,18 +1,10 @@
 import json
 import sys
 from collections import OrderedDict
-
-import requests
-
-vkToken = sys.argv[3]
-
-pazanIds = None
-
-pazansFileName = sys.argv[1]
-with open(pazansFileName) as file:
-	pazanIds = [int(line) for line in file]
+import vk_api
 
 artistStats = dict()
+
 
 def save():
 	with open(sys.argv[2], "w", encoding="utf-8") as file:
@@ -20,27 +12,38 @@ def save():
 		file.write(json.dumps(data, sort_keys=False))
 	print("saving")
 
-try:
-	for index, pazanId in enumerate(pazanIds):
-		print(index)
-		jsonData = requests.get("https://api.vk.com/method/{}?{}&access_token={}".format("audio.get", "owner_id={}&need_user={}&count={}".format(pazanId, 0, 100), vkToken)).json()
-		if "error" not in jsonData:
-			for audio in jsonData["response"][1:]:
-				audioName = audio["artist"] + audio["title"]
-				artistStatsItem = artistStats.get(audioName, {
-					"url": audio["url"],
-					"count": 0
-				})
-				artistStatsItem["count"] += 1
-				artistStats[audioName] = artistStatsItem
-		elif jsonData["error"]["error_code"] != 19:
-			print(jsonData["error"])
-			print("Press any key")
-			input()
 
-		if index % 10 == 0:
+# getting pazans
+pazanIds = None
+pazansFileName = sys.argv[1]
+with open(pazansFileName) as file:
+	pazanIds = [int(line) for line in file]
+
+# getting music
+vk = vk_api.VkApi(token=sys.argv[3], app_id=sys.argv[4])
+
+for index, pazanId in enumerate(pazanIds, start=(sys.argv[5] if len(sys.argv) > 5 else 0)):
+	try:
+		print(index)
+		jsonData = vk.method("audio.get", {"owner_id": pazanId, "need_user": 0, "count": 100})
+		for audio in jsonData["items"]:
+			audioName = audio["artist"] + " - " + audio["title"]
+			artistStatsItem = artistStats.get(audioName, {
+				"url": audio["url"],
+				"genre_id": audio.get("genre_id", ""),
+				"count": 0
+			})
+			artistStatsItem["count"] += 1
+			artistStats[audioName] = artistStatsItem
+
+		if index % 100 == 0:
 			save()
-except Exception as e:
-	print(e)
+	except vk_api.ApiError as e:
+		if e.code != 201:
+			print(e)
+			break
+	except Exception as e:
+		print(e)
+		break
 
 save()
