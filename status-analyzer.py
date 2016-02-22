@@ -1,8 +1,16 @@
 import json
 import sys
+from collections import OrderedDict
 
 from nltk.stem.snowball import RussianStemmer
 from nltk.tokenize import RegexpTokenizer
+
+
+def dictWithoutOneKey(d, key):
+	new_d = d.copy()
+	new_d.pop(key)
+	return new_d
+
 
 # load pazans
 pazansGroups = None
@@ -37,8 +45,9 @@ with open(usersFileName, "r") as file:
 				statusStats[filteredStatusText] = statusStatsItem
 
 # print result
-with open(sys.argv[3], "w", encoding="utf-8") as file:
-	for item in sorted(statusStats.items(), key=lambda item: item[1]["count-boys"] + item[1]["count-girls"], reverse=True):
-		file.write(item[1]["full"] + "\n")
-		file.write("\tboys: " + str(item[1]["count-boys"]) + "\n")
-		file.write("\tgirls: " + str(item[1]["count-girls"]) + "\n")
+destFileName = sys.argv[3]
+with open(destFileName, "w", encoding="utf8") as file:
+	sortKeyGetter = lambda item: item[1]["count-boys"] + item[1]["count-girls"]
+	sortedStatues = [item[1] for item in sorted(statusStats.items(), key=sortKeyGetter, reverse=True)]
+	data = OrderedDict([(item["full"], dictWithoutOneKey(item, "full")) for item in sortedStatues])
+	file.write(json.dumps(data, ensure_ascii=False, indent=4))
