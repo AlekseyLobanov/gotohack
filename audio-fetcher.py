@@ -8,7 +8,8 @@ import vk_api
 pazanIds = None
 pazansFileName = sys.argv[1]
 with open(pazansFileName) as file:
-	pazanIds = [int(line) for line in file]
+	jsonData = json.loads(file.read())
+	pazanIds = [item[0] for item in sorted(jsonData.items(), key=lambda item: len(item[1]), reverse=True)]
 
 # getting music
 def captcha_handler(captcha):
@@ -21,7 +22,7 @@ for index, pazanId in enumerate(pazanIds, start=(int(sys.argv[5]) if len(sys.arg
 	done = False
 	while not done:
 		try:
-			print(index)
+			print(index, pazanId)
 			pazanSongs = []
 			# jsonData = vk.method("audio.get", {"owner_id": pazanId, "need_user": 0, "count": 100})
 			jsonData = vk.method("execute.getMusic", {"id": pazanId})
