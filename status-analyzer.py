@@ -1,13 +1,22 @@
 import json
 import sys
+from collections import OrderedDict
+
 from nltk.stem.snowball import RussianStemmer
 from nltk.tokenize import RegexpTokenizer
+
+
+def dictWithoutOneKey(d, key):
+	new_d = d.copy()
+	new_d.pop(key)
+	return new_d
+
 
 # load pazans
 pazansGroups = None
 
-pazansFileName = sys.argv[2]
-with open(pazansFileName) as file:
+pazansFileName = sys.argv[1]
+with open(pazansFileName, "r") as file:
 	pazansGroups = json.loads(file.read())
 
 # analyze statues
@@ -16,8 +25,8 @@ statusStats = dict()
 tokenizer = RegexpTokenizer(r"[A-Za-zА-Яа-я]+")
 stemmer = RussianStemmer()
 
-usersFileName = sys.argv[1]
-with open(usersFileName) as file:
+usersFileName = sys.argv[2]
+with open(usersFileName, "r") as file:
 	for line in file:
 		user = json.loads(line)
 		id = str(user["_id"])
@@ -36,8 +45,9 @@ with open(usersFileName) as file:
 				statusStats[filteredStatusText] = statusStatsItem
 
 # print result
-with open(sys.argv[3], "w", encoding="utf-8") as file:
-	for item in sorted(statusStats.items(), key=lambda item: item[1]["count-boys"] + item[1]["count-girls"], reverse=True):
-		file.write(item[1]["full"] + "\n")
-		file.write("\tboys: " + str(item[1]["count-boys"]) + "\n")
-		file.write("\tgirls: " + str(item[1]["count-girls"]) + "\n")
+destFileName = sys.argv[3]
+with open(destFileName, "w", encoding="utf8") as file:
+	sortKeyGetter = lambda item: item[1]["count-boys"] + item[1]["count-girls"]
+	sortedStatues = [item[1] for item in sorted(statusStats.items(), key=sortKeyGetter, reverse=True)]
+	data = OrderedDict([(item["full"], dictWithoutOneKey(item, "full")) for item in sortedStatues])
+	file.write(json.dumps(data, ensure_ascii=False, indent=4))
