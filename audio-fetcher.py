@@ -7,7 +7,7 @@ import vk_api
 # getting pazans
 pazanIds = None
 pazansFileName = sys.argv[1]
-with open(pazansFileName) as file:
+with open(pazansFileName, "r") as file:
 	jsonData = json.loads(file.read())
 	pazanIds = [item[0] for item in sorted(jsonData.items(), key=lambda item: len(item[1]), reverse=True)]
 

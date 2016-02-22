@@ -10,7 +10,7 @@ tokenizer = RegexpTokenizer(r"[A-Za-zА-Яа-я]+")
 stemmer = RussianStemmer()
 
 musicFileName = sys.argv[0]
-with open(musicFileName) as file:
+with open(musicFileName, "r") as file:
 	for line in file:
 		jsonData = json.loads(line, encoding="utf8")
 		for song in jsonData.values()[0]:

@@ -1,5 +1,6 @@
 import json
 import sys
+
 from nltk.stem.snowball import RussianStemmer
 from nltk.tokenize import RegexpTokenizer
 
@@ -7,7 +8,7 @@ from nltk.tokenize import RegexpTokenizer
 pazansGroups = None
 
 pazansFileName = sys.argv[1]
-with open(pazansFileName) as file:
+with open(pazansFileName, "r") as file:
 	pazansGroups = json.loads(file.read())
 
 # analyze statues
@@ -17,7 +18,7 @@ tokenizer = RegexpTokenizer(r"[A-Za-zА-Яа-я]+")
 stemmer = RussianStemmer()
 
 usersFileName = sys.argv[2]
-with open(usersFileName) as file:
+with open(usersFileName, "r") as file:
 	for line in file:
 		user = json.loads(line)
 		id = str(user["_id"])

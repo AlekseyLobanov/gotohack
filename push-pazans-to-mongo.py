@@ -1,6 +1,7 @@
+import os
 import re
 import sys
-import os
+
 import pymongo
 
 dirWithIds = sys.argv[1]
@@ -36,7 +37,7 @@ else:
 for fileName in os.listdir(dirWithIds):
 	print("parsing", fileName)
 
-	with open(os.path.join(dirWithIds, fileName)) as file:
+	with open(os.path.join(dirWithIds, fileName), "r") as file:
 		for line in file:
 			id = int(line)
 			if id in ids:
