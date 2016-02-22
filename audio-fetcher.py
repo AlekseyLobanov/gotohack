@@ -1,7 +1,7 @@
 import json
 import sys
-
 import time
+
 import vk_api
 
 # getting pazans
@@ -11,7 +11,11 @@ with open(pazansFileName) as file:
 	pazanIds = [int(line) for line in file]
 
 # getting music
-vk = vk_api.VkApi(token=sys.argv[3], app_id=sys.argv[4])
+def captcha_handler(captcha):
+	key = input("Enter Captcha {0}: ".format(captcha.get_url())).strip()
+	return captcha.try_again(key)
+
+vk = vk_api.VkApi(token=sys.argv[3], app_id=sys.argv[4], captcha_handler=captcha_handler)
 
 for index, pazanId in enumerate(pazanIds, start=(int(sys.argv[5]) if len(sys.argv) > 5 else 0)):
 	done = False
@@ -19,7 +23,8 @@ for index, pazanId in enumerate(pazanIds, start=(int(sys.argv[5]) if len(sys.arg
 		try:
 			print(index)
 			pazanSongs = []
-			jsonData = vk.method("audio.get", {"owner_id": pazanId, "need_user": 0, "count": 100})
+			# jsonData = vk.method("audio.get", {"owner_id": pazanId, "need_user": 0, "count": 100})
+			jsonData = vk.method("execute.getMusic", {"id": pazanId})
 			for audio in jsonData["items"]:
 				pazanSong = {
 					"artist": audio["artist"],
