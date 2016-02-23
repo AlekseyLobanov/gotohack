@@ -1,13 +1,17 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*- 
+
 import os
 import re
 import sys
 
 import pymongo
 
+
 dirWithIds = sys.argv[1]
 
-pazansMongo = pymongo.MongoClient("equal.cf")
-pazansDb = pazansMongo['pazans']
+pazansMongo      = pymongo.MongoClient("equal.cf")
+pazansDb         = pazansMongo['pazans']
 pazansCollection = pazansDb['pazans']
 
 # gotoMongo = pymongo.MongoClient("goto.reproducible.work")
@@ -20,32 +24,32 @@ ids = set()
 idsFile = sys.argv[3]
 if not os.path.isfile(idsFile):
 	idsRegex = re.compile('\\"_id\\": (.+?),')
-	with open(usersJsonFile, "r") as fileName:
-		for line in fileName:
+	with open(usersJsonFile, "r") as file_name:
+		for line in file_name:
 			groups = idsRegex.search(line)
-			id = int(groups.group(1))
-			ids.add(id)
+			uid = int(groups.group(1))
+			ids.add(uid)
 
-	with open(idsFile, "w") as fileName:
-		for id in ids:
-			fileName.write(str(id) + "\n")
+	with open(idsFile, "w") as file_name:
+		for uid in ids:
+			file_name.write(str(uid) + "\n")
 else:
-	with open(idsFile, "r") as fileName:
-		for line in fileName:
-			ids.add(int(line))
+	with open(idsFile, "r") as f_ids:
+		for line in f_ids:
+			f_ids.add(int(line))
 
-for fileName in os.listdir(dirWithIds):
-	print("parsing", fileName)
+for file_name in os.listdir(dirWithIds):
+	print("parsing {}".format(file_name))
 
-	with open(os.path.join(dirWithIds, fileName), "r") as file:
+	with open(os.path.join(dirWithIds, file_name), "r") as file:
 		for line in file:
 			id = int(line)
 			if id in ids:
 				pazan = pazansCollection.find_one(id)
 				if pazan is None:
-					pazansCollection.insert_one({"_id": id, "groups": [fileName]})
-				elif fileName not in pazan["groups"]:
-					pazan["groups"].append(fileName)
+					pazansCollection.insert_one({"_id": id, "groups": [file_name]})
+				elif file_name not in pazan["groups"]:
+					pazan["groups"].append(file_name)
 					pazansCollection.update_one(
 							{"_id": pazan["_id"]},
 							{"$set": {"groups": pazan["groups"]}}
