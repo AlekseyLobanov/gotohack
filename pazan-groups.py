@@ -7,7 +7,6 @@ where FOLDER_WITH_PUBLICS folder with files with one id of group per line
 import sys
 import json
 import os
-from os.path import join
 
 all_ids = set([int(i) for i in open(sys.argv[1]).read().split()])
 
