@@ -47,7 +47,7 @@ with open(users_file_name, "r") as file:
                     status_stats_item["count-boys"]  += len(pazan_groups)
                 if user["sex"] == 1:
                     status_stats_item["count-girls"] += len(pazan_groups)
-                status_stats[filteredstatus_text] = status_stats_item
+                status_stats[filtered_status_text] = status_stats_item
 
 # print result
 dest_file_name = sys.argv[3]
