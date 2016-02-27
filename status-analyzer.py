@@ -19,8 +19,8 @@ def dictWithoutOneKey(d, key):
 pazans_groups = None
 
 pazans_file_name = sys.argv[1]
-with open(pazans_file_name, "r") as file:
-    pazans_groups = json.loads(file.read())
+with open(pazans_file_name, "r") as pazans_file:
+    pazans_groups = json.loads(pazans_file.read())
 
 # analyze statues
 status_stats = dict()
@@ -29,8 +29,8 @@ tokenizer = RegexpTokenizer(r"[A-Za-zА-Яа-я]+")
 stemmer   = RussianStemmer()
 
 users_file_name = sys.argv[2]
-with open(users_file_name, "r") as file:
-    for line in file:
+with open(users_file_name, "r") as users_file:
+    for line in users_file:
         user = json.loads(line)
         uid = str(user["_id"])
         if uid in pazans_groups:
@@ -51,8 +51,8 @@ with open(users_file_name, "r") as file:
 
 # print result
 dest_file_name = sys.argv[3]
-with open(dest_file_name, "w", encoding="utf-8") as file:
+with open(dest_file_name, "w", encoding="utf-8") as f_out:
     sortKeyGetter = lambda item: item[1]["count-boys"] + item[1]["count-girls"]
     sortedStatues = [item[1] for item in sorted(status_stats.items(), key=sortKeyGetter, reverse=True)]
     data = OrderedDict([(item["full"], dictWithoutOneKey(item, "full")) for item in sortedStatues])
-    file.write(json.dumps(data, ensure_ascii=False, indent=4))
+    f_out.write(json.dumps(data, ensure_ascii=False, indent=4))
