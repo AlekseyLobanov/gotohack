@@ -4,7 +4,6 @@
 import sys
 import json
 import os
-from os.path import join
 
 all_ids = {}
 
